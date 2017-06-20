@@ -1,0 +1,21 @@
+---
+title: "Specifying the Fitting Problem"
+author: "Jie Xue"
+date: "June 20, 2017"
+output: html_document
+---
+
+## Case Study: Prediction of Body Fat
+```{r, warning=FALSE, message=FALSE}
+library("mboost")  ## load package
+data("bodyfat", package = "TH.data")    ## load data
+head(bodyfat)
+```
+
+Same model as glm1 but now with QuantReg() family
+```{r}
+glm3 <- glmboost(DEXfat ~ hipcirc + kneebreadth + anthro3a, data = bodyfat,
+                 family = QuantReg(tau = 0.5), control = boost_control(mstop = 500))
+coef(glm3, off2int = TRUE)
+```
+

@@ -1,0 +1,31 @@
+---
+title: "Fitting Generalized Additive Models"
+author: "Jie Xue"
+date: "June 20, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+```
+
+## Case Study: Prediction of Body Fat
+```{r, warning=FALSE, message=FALSE}
+library("mboost")  ## load package
+data("bodyfat", package = "TH.data")    ## load data
+head(bodyfat)
+```
+
+
+### now an additive model with the same variables as lm1
+```{r}
+gam1 <- gamboost(DEXfat ~ bbs(hipcirc) + bbs(kneebreadth) + bbs(anthro3a), data = bodyfat)
+```
+
+### Using plot() on a gamboost object delivers automatically the partial effects of the different base-learners:
+```{r}
+par(mfrow = c(1,3)) ## 3 plots in one device
+plot(gam1) ## get the partial effects
+```
+

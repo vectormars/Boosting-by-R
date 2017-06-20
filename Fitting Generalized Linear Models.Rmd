@@ -1,0 +1,72 @@
+---
+title: "Fitting Generalized Linear Models"
+author: "Jie Xue"
+date: "June 20, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list=ls())
+```
+
+## Case Study: Prediction of Body Fat
+```{r, warning=FALSE, message=FALSE}
+library("mboost")  ## load package
+data("bodyfat", package = "TH.data")    ## load data
+head(bodyfat)
+```
+
+The response variable is the body fat measured by DXA (DEXfat).
+
+#### 1.A Reproduce formula of Garcia et al., 2005
+```{r, 001}
+lm1 <- lm(DEXfat ~ hipcirc + kneebreadth + anthro3a, data = bodyfat)
+coef(lm1)
+```
+
+
+#### 1.B Estimate same model by glmboost
+```{r, 002}
+glm1 <- glmboost(DEXfat ~ hipcirc + kneebreadth + anthro3a, data = bodyfat)
+coef(glm1, off2int=TRUE) ## off2int adds the offset to the intercept
+```
+
+Note that in this case we used the default settings in control and the default family Gaussian() leading to
+boosting with the $L_2$ loss
+
+### We now want consider all available variables as potential predictors.
+#### 2.1 Build formula
+```{r, 003}
+preds <- names(bodyfat[, names(bodyfat) != "DEXfat"]) ## names of predictors
+fm <- as.formula(paste("DEXfat ~", paste(preds, collapse = "+"))) ## build formula
+fm
+```
+
+#### 2.2 Build model in 2 ways (identical results)
+```{r, 004}
+glm2a <- glmboost(fm, data = bodyfat)
+glm2b <- glmboost(DEXfat ~ ., data = bodyfat)
+identical(coef(glm2a), coef(glm2b))
+```
+
+
+### 3. A plot of the coefficient paths
+#### 3.1 All coefficients
+```{r, 005}
+op <- par(mar = c(5,4,4,5.8) + 0.1)
+plot(glm2b, off2int = TRUE) ## default plot, offset added to intercept
+par(op)
+```
+
+
+
+#### 3.2 Change ylim to the range of the coefficients without intercept (zoom-in)
+```{r, 006}
+op <- par(mar = c(5,4,4,5.8) + 0.1)
+plot(glm2b, ylim = range(coef(glm2b, which = preds)))
+par(op)
+```
+
+
+

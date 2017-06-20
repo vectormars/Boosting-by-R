@@ -1,0 +1,67 @@
+---
+title: "Early Stopping to Prevent Overfitting"
+author: "Jie Xue"
+date: "June 20, 2017"
+output: html_document
+---
+
+## Case Study: Prediction of Body Fat
+```{r, warning=FALSE, message=FALSE}
+library("mboost")  ## load package
+data("bodyfat", package = "TH.data")    ## load data
+head(bodyfat)
+```
+
+### In mboost infrastructure exists to compute bootstrap estimates, k-fold crossvalidation estimates and sub-sampling estimates.
+
+### 1. We first fit a model with all available predictors and then tune mstop by 25-fold bootstrapping.
+#### 1.1 Every predictor enters the model via a bbs() base-learner (i.e., as smooth effect)
+```{r}
+gam2 <- gamboost(DEXfat ~ ., baselearner = "bbs", data = bodyfat,
+  control = boost_control(trace = TRUE))
+```
+
+```{r, results='hide'}
+set.seed(123) ## set seed to make results reproducible
+cvm <- cvrisk(gam2) ## default method is 25-fold bootstrap cross-validation
+```
+
+#### 1.2 Get the paths
+```{r}
+plot(cvm)
+```
+
+
+#### 1.3 Extract the optimal mstop
+```{r}
+mstop(cvm)
+```
+
+#### 1.4 Set the model automatically to the optimal mstop
+```{r}
+gam2[ mstop(cvm) ]
+```
+
+#### 1.5 Displays the selected base-learners at iteration 33
+```{r}
+names(coef(gam2)) 
+```
+
+
+### 2. To see that nothing got lost we now increase mstop to 1000:
+```{r}
+gam2[1000]
+```
+
+Displays the selected base-learners, now at iteration 1000
+```{r}
+names(coef(gam2))
+```
+
+
+
+
+
+
+
+
